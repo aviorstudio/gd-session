@@ -1,9 +1,9 @@
 ## Bounded session persistence through an injected native credential adapter or
 ## process memory on web. Legacy plaintext sources are retained after migration.
-class_name GdSessionStoreModule
 extends RefCounted
 
 const CredentialAdapter = preload("credential_adapter.gd")
+const WebMemoryAdapter = preload("web_memory_adapter.gd")
 const MAX_SESSION_BYTES: int = 64 * 1024
 const MAX_JSON_DEPTH: int = 16
 const MAX_STORE_ID_BYTES: int = 64
@@ -46,7 +46,7 @@ func _init(config: SessionStoreConfig = null) -> void:
 	if config != null:
 		_config = config
 	if OS.has_feature("web"):
-		_adapter = CredentialAdapter.WebMemoryAdapter.new()
+		_adapter = WebMemoryAdapter.new()
 	else:
 		_adapter = _config.native_adapter
 
