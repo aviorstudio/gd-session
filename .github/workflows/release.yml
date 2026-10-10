@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump
+        required: true
+        type: choice
+        options: [patch, minor, major]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    # Bounded, so a step that hangs fails here rather than sitting until the
+    # runner's own timeout hours later.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Test exact release commit and package bytes
+        uses: ./.github/actions/test
+      - name: Upload tested release ZIP
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tested-release-zip
+          path: |
+            dist/@aviorstudio_gd-session.zip
+            dist/@aviorstudio_gd-session.zip.sha256
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: test
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: tested-release-zip
+          path: dist
+      - name: Determine release version
+        id: release
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+          latest="$(git tag --list 'v[0-9]*' | sed -E 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
+          if [ -z "$latest" ]; then
+            version="0.0.1"
+          else
+            IFS=. read -r major minor patch <<< "$latest"
+            case "$BUMP" in
+              major) major=$((major + 1)); minor=0; patch=0 ;;
+              minor) minor=$((minor + 1)); patch=0 ;;
+              patch) patch=$((patch + 1)) ;;
+            esac
+            version="${major}.${minor}.${patch}"
+          fi
+          plugin_version="$(sed -n -E 's/^version="([^"]+)"/\1/p' addon/plugin.cfg)"
+          test "$plugin_version" = "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+      - name: Verify tested release ZIP
+        run: |
+          (cd dist && sha256sum --check @aviorstudio_gd-session.zip.sha256)
+          ./scripts/verify_package.sh dist/@aviorstudio_gd-session.zip
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${{ steps.release.outputs.tag }}" dist/@aviorstudio_gd-session.zip --target "$GITHUB_SHA" --title "${{ steps.release.outputs.tag }}" --notes "Release ${{ steps.release.outputs.tag }} from $GITHUB_SHA"
+      - name: Install GDAM
+        uses: aviorstudio/gdam-actions/install@699727af05ff8da8f6816cc5c14a16b2b9470219 # v0.2.0
+        with:
+          version: v0.0.8
+          archive-sha256: 7ef2a325ad1416ce850a332f4380b1b290bd7a56e2a20f544536386cf64abb92
+
+      - name: Publish to GDAM
+        uses: aviorstudio/gdam-actions/publish@699727af05ff8da8f6816cc5c14a16b2b9470219 # v0.2.0
+        with:
+          tag: ${{ steps.release.outputs.tag }}
+          secret-key: ${{ secrets.GDAM_SECRET_KEY }}
+          asset: '@aviorstudio_gd-session.zip'
