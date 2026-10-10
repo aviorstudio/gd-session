@@ -38,7 +38,7 @@ func _ready() -> void:
 	)
 	result_node.textContent = (
 		"GD Session web boundary PASS\n"
-		+ "version=0.0.1\n"
+		+ "version=0.0.2\n"
 		+ "persistence=memory-only\n"
 		+ "reload-start=empty\n"
 		+ "safe-key=quotes/newlines remain data\n"
