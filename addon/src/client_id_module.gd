@@ -1,8 +1,8 @@
 ## Random client ID generation through the selected persistence adapter.
-class_name GdSessionClientIdModule
 extends RefCounted
 
 const CredentialAdapter = preload("credential_adapter.gd")
+const WebMemoryAdapter = preload("web_memory_adapter.gd")
 const MAX_KEY_BYTES: int = 128
 const MAX_PREFIX_BYTES: int = 64
 const MAX_ID_BYTES: int = 256
@@ -39,7 +39,7 @@ static func get_client_id(config: ClientIdConfig = null) -> Result:
 	if key_size == 0 or key_size > MAX_KEY_BYTES or resolved.prefix.to_utf8_buffer().size() > MAX_PREFIX_BYTES:
 		return Result.new(Status.INVALID_CONFIG, "storage_key must be 1..128 bytes and prefix <= 64 bytes")
 	var adapter: CredentialAdapter = (
-		CredentialAdapter.WebMemoryAdapter.new() if OS.has_feature("web") else resolved.native_adapter
+		WebMemoryAdapter.new() if OS.has_feature("web") else resolved.native_adapter
 	)
 	if adapter == null:
 		return Result.new(Status.UNAVAILABLE, "native credential adapter is required")

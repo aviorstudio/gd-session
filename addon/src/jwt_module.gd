@@ -1,5 +1,4 @@
 ## Bounded JWT metadata decoding. No signature or claim is verified here.
-class_name GdSessionJwtModule
 extends RefCounted
 
 const MAX_TOKEN_BYTES: int = 16 * 1024

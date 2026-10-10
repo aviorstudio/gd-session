@@ -10,3 +10,5 @@ src/jwt_module.gd
 src/jwt_module.gd.uid
 src/session_store_module.gd
 src/session_store_module.gd.uid
+src/web_memory_adapter.gd
+src/web_memory_adapter.gd.uid
