@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: d5937104c634f456655291699ac15e8ddb9868dc86c0776f6a4fc8baa1149700 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: fd58ed515f375be1fcedcfc55e54fdf5f0419bb5adb23401fb326ab9fcd715e5 -->
 
 # gd-session
 
@@ -92,3 +92,16 @@ addon starts with an empty store and signs in once.
 ## License
 
 See `LICENSE`.
+
+## Contributor checks
+
+Install [mise](https://mise.jdx.dev/), then prepare the pinned development helpers and run the complete native gate:
+
+```sh
+git clone https://github.com/nicodes/tools.git .ci-tools
+git -C .ci-tools checkout --detach f7e243524ce2aa29f299e4c79db33001f72f4a30
+mise install
+mise run check
+```
+
+`mise.toml` owns tool versions and tasks. Engine and template downloads are checksum verified. `mise run build` packages the addon; `mise run test` runs its declared tests. The complete check also validates the installed artifact. Build and test receipts stay in `.artifacts/verification`.
