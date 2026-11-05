@@ -1,7 +1,6 @@
 plugin.cfg
 plugin.gd
 plugin.gd.uid
-src/
 src/client_id_module.gd
 src/client_id_module.gd.uid
 src/credential_adapter.gd
