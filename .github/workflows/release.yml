@@ -1,5 +1,6 @@
 # Generated cookbook caller. Change recipe data and regenerate.
 name: Release
+run-name: "Release · ${{ inputs.bump }}"
 'on':
   workflow_dispatch:
     inputs:
@@ -14,13 +15,14 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    uses: nicodes/cookbook/.github/workflows/cookbook-addon-release.yml@77d7bfa24cf0ec35a2de7585d48797b64f41cbb3
+    name: Release
+    uses: nicodes/cookbook/.github/workflows/release-addon-api-key.yml@91eb552cd44e876a66bbc519ef81f36a3789f397
     permissions:
       contents: write
       actions: read
       pull-requests: read
     with:
-      cookbook-ref: 77d7bfa24cf0ec35a2de7585d48797b64f41cbb3
+      cookbook-ref: 91eb552cd44e876a66bbc519ef81f36a3789f397
       mode: release
       bump: ${{ inputs.bump }}
     secrets:
